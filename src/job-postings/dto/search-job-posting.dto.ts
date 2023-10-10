@@ -8,6 +8,6 @@ import { JobPosting } from '../entity/job-posting.entity';
 export class SearchJobPostingInput extends PaginationInput {}
 
 export class SearchJobPostingOutput extends PaginationOutput {
-  @ApiProperty({ description: '채용공고 리스트' })
+  @ApiProperty({ description: '채용공고 리스트', required: false })
   result?: JobPosting[];
 }
