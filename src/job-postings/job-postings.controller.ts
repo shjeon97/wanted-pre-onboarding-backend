@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { JobPostingsService } from './job-postings.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -13,6 +22,10 @@ import {
   DeleteJobPostingInput,
   DeleteJobPostingOutput,
 } from './dto/delete-job-posting.dto';
+import {
+  SearchJobPostingInput,
+  SearchJobPostingOutput,
+} from './dto/search-job-posting.dto';
 
 @ApiTags('job-postings')
 @Controller('job-postings')
@@ -44,5 +57,14 @@ export class JobPostingsController {
     @Param() deleteJobPostingInput: DeleteJobPostingInput,
   ): Promise<DeleteJobPostingOutput> {
     return this.jobPostingsService.deleteJobPosting(deleteJobPostingInput);
+  }
+
+  @ApiOperation({ summary: '채용공고 목록' })
+  @ApiResponse({ type: SearchJobPostingOutput })
+  @Get('search')
+  async searchNorm(
+    @Query() searchJobPostingInput: SearchJobPostingInput,
+  ): Promise<SearchJobPostingOutput> {
+    return this.jobPostingsService.searchJobPosting(searchJobPostingInput);
   }
 }

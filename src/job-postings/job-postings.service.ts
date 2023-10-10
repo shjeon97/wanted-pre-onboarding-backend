@@ -1,7 +1,7 @@
 import { Body, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JobPosting } from './entity/job-posting.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import {
   CreateJobPostingInput,
   CreateJobPostingOutput,
@@ -15,6 +15,10 @@ import {
   DeleteJobPostingInput,
   DeleteJobPostingOutput,
 } from './dto/delete-job-posting.dto';
+import {
+  SearchJobPostingInput,
+  SearchJobPostingOutput,
+} from './dto/search-job-posting.dto';
 
 @Injectable()
 export class JobPostingsService {
@@ -120,6 +124,40 @@ export class JobPostingsService {
       return {
         ok: false,
         error: 'failed to deleted job posting',
+      };
+    }
+  }
+
+  async searchJobPosting({
+    page,
+    pageSize,
+    searchType,
+    searchValue,
+  }: SearchJobPostingInput): Promise<SearchJobPostingOutput> {
+    try {
+      const [jobPostings, totalResult] = await this.jobPosting.findAndCount({
+        ...(searchType &&
+          searchValue && {
+            where: { [searchType]: ILike(`%${searchValue.trim()}%`) },
+          }),
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        order: {
+          id: 'DESC',
+        },
+      });
+
+      return {
+        ok: true,
+        result: jobPostings,
+        totalPage: Math.ceil(totalResult / pageSize),
+        totalResult,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return {
+        ok: false,
+        error: 'failed to searched job posting',
       };
     }
   }
