@@ -140,8 +140,10 @@ export class JobPostingsService {
           searchValue && {
             where: { [searchType]: ILike(`%${searchValue.trim()}%`) },
           }),
+        relations: ['company'],
         skip: (page - 1) * pageSize,
         take: pageSize,
+        select: ['id', 'company', 'position', 'compensation', 'skill'],
         order: {
           id: 'DESC',
         },
