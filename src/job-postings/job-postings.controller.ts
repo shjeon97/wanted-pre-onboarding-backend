@@ -26,6 +26,10 @@ import {
   SearchJobPostingInput,
   SearchJobPostingOutput,
 } from './dto/search-job-posting.dto';
+import {
+  DetailJobPostingInput,
+  DetailJobPostingOutput,
+} from './dto/detail-job-posting.dto';
 
 @ApiTags('job-postings')
 @Controller('job-postings')
@@ -62,9 +66,18 @@ export class JobPostingsController {
   @ApiOperation({ summary: '채용공고 목록' })
   @ApiResponse({ type: SearchJobPostingOutput })
   @Get('search')
-  async searchNorm(
+  async searchJobPosting(
     @Query() searchJobPostingInput: SearchJobPostingInput,
   ): Promise<SearchJobPostingOutput> {
     return this.jobPostingsService.searchJobPosting(searchJobPostingInput);
+  }
+
+  @ApiOperation({ summary: '채용공고 세부정보' })
+  @ApiResponse({ type: DetailJobPostingOutput })
+  @Get(':id')
+  async detailJobPosting(
+    @Param() detailJobPostingInput: DetailJobPostingInput,
+  ): Promise<DetailJobPostingOutput> {
+    return this.jobPostingsService.detailJobPosting(detailJobPostingInput);
   }
 }

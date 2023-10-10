@@ -1,7 +1,7 @@
 import { Body, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JobPosting } from './entity/job-posting.entity';
-import { ILike, Repository } from 'typeorm';
+import { ILike, Not, Repository } from 'typeorm';
 import {
   CreateJobPostingInput,
   CreateJobPostingOutput,
@@ -19,6 +19,10 @@ import {
   SearchJobPostingInput,
   SearchJobPostingOutput,
 } from './dto/search-job-posting.dto';
+import {
+  DetailJobPostingInput,
+  DetailJobPostingOutput,
+} from './dto/detail-job-posting.dto';
 
 @Injectable()
 export class JobPostingsService {
@@ -160,6 +164,62 @@ export class JobPostingsService {
       return {
         ok: false,
         error: 'failed to searched job posting',
+      };
+    }
+  }
+
+  async detailJobPosting({
+    id,
+  }: DetailJobPostingInput): Promise<DetailJobPostingOutput> {
+    try {
+      const exist = await this.jobPosting.findOne({
+        where: { id },
+        relations: ['company'],
+        select: [
+          'id',
+          'company',
+          'position',
+          'compensation',
+          'skill',
+          'detail',
+        ],
+      });
+
+      if (!exist) {
+        return {
+          ok: false,
+          error: 'not found job posting',
+        };
+      }
+
+      const otherJobPostings = await this.jobPosting.find({
+        where: {
+          id: Not(id),
+          company: {
+            id: exist.company.id,
+          },
+        },
+        select: ['id'],
+      });
+
+      const otherJobPostingIds: number[] = [];
+
+      if (otherJobPostings.length > 0) {
+        otherJobPostings.map((otherJobPosting) =>
+          otherJobPostingIds.push(otherJobPosting.id),
+        );
+      }
+
+      return {
+        ok: true,
+        jobPosting: exist,
+        otherJobPostingIds,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return {
+        ok: false,
+        error: 'failed to get detail job posting',
       };
     }
   }
