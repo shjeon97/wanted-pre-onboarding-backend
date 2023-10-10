@@ -7,6 +7,14 @@ import {
   CreateJobPostingOutput,
 } from './dto/create-job-posting.dto';
 import { Company } from 'src/companies/entity/company.entity';
+import {
+  EditJobPostingInput,
+  EditJobPostingOutput,
+} from './dto/edit-job-posting.dto';
+import {
+  DeleteJobPostingInput,
+  DeleteJobPostingOutput,
+} from './dto/delete-job-posting.dto';
 
 @Injectable()
 export class JobPostingsService {
@@ -49,6 +57,69 @@ export class JobPostingsService {
       return {
         ok: false,
         error: 'failed to create job posting',
+      };
+    }
+  }
+
+  async editJobPosting(
+    @Body() editJobPostingInput: EditJobPostingInput,
+  ): Promise<EditJobPostingOutput> {
+    try {
+      const exist = await this.jobPosting.findOne({
+        where: { id: editJobPostingInput.id },
+      });
+
+      if (!exist) {
+        return {
+          ok: false,
+          error: 'not found job posting',
+        };
+      }
+
+      await this.jobPosting.save(
+        this.jobPosting.create({
+          id: exist.id,
+          ...editJobPostingInput,
+        }),
+      );
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return {
+        ok: false,
+        error: 'failed to edited job posting',
+      };
+    }
+  }
+
+  async deleteJobPosting({
+    id,
+  }: DeleteJobPostingInput): Promise<DeleteJobPostingOutput> {
+    try {
+      const exist = await this.jobPosting.findOne({
+        where: { id },
+      });
+
+      if (!exist) {
+        return {
+          ok: false,
+          error: 'not found job posting',
+        };
+      }
+
+      await this.jobPosting.delete({ id: exist.id });
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return {
+        ok: false,
+        error: 'failed to deleted job posting',
       };
     }
   }
