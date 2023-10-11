@@ -142,7 +142,19 @@ export class JobPostingsService {
       const [jobPostings, totalResult] = await this.jobPosting.findAndCount({
         ...(searchType &&
           searchValue && {
-            where: { [searchType]: ILike(`%${searchValue.trim()}%`) },
+            where: {
+              ...(searchType === 'name' ||
+              searchType === 'country' ||
+              searchType === 'region'
+                ? {
+                    company: {
+                      [searchType]: ILike(`%${searchValue.trim()}%`),
+                    },
+                  }
+                : {
+                    [searchType]: ILike(`%${searchValue.trim()}%`),
+                  }),
+            },
           }),
         relations: ['company'],
         skip: (page - 1) * pageSize,
